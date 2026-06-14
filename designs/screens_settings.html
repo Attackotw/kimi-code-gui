@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kimi Code GUI — 设置</title>
+<style>
+/* ── CodePilot Design Tokens (shared with main.html) ── */
+:root {
+  --radius: 1rem;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.147 0.004 49.25);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.147 0.004 49.25);
+  --primary: oklch(0.262 0 0);
+  --primary-foreground: oklch(0.985 0.001 106.423);
+  --secondary: oklch(0.95 0.002 106.424);
+  --secondary-foreground: oklch(0.216 0.006 56.043);
+  --muted: oklch(0.95 0.002 106.424);
+  --muted-foreground: oklch(0.553 0.013 58.071);
+  --accent: oklch(0.95 0.002 106.424);
+  --accent-foreground: oklch(0.216 0.006 56.043);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.923 0.003 48.717);
+  --input: oklch(0.923 0.003 48.717);
+  --ring: oklch(0.262 0 0);
+  --status-success: oklch(0.527 0.154 150.069);
+  --status-warning: oklch(0.705 0.213 47.604);
+  --status-error: oklch(0.577 0.245 27.325);
+  --status-info: oklch(0.546 0.245 262.881);
+  --shadow-card: 0 1px 1px -0.5px rgba(0,0,0,0.06), 0 3px 3px -1.5px rgba(0,0,0,0.06), 0 6px 6px -3px rgba(0,0,0,0.06);
+  --traffic-light-safe: 78px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.147 0.004 49.25);
+    --foreground: oklch(0.985 0.001 106.423);
+    --card: oklch(0.216 0.006 56.043);
+    --card-foreground: oklch(0.985 0.001 106.423);
+    --primary: oklch(0.985 0.001 106.423);
+    --primary-foreground: oklch(0.262 0 0);
+    --secondary: oklch(0.268 0.007 34.298);
+    --secondary-foreground: oklch(0.985 0.001 106.423);
+    --muted: oklch(0.268 0.007 34.298);
+    --muted-foreground: oklch(0.709 0.01 56.259);
+    --accent: oklch(0.268 0.007 34.298);
+    --accent-foreground: oklch(0.985 0.001 106.423);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.985 0.001 106.423);
+    --shadow-card: 0 1px 1px -0.5px rgba(0,0,0,0.30), 0 3px 3px -1.5px rgba(0,0,0,0.30), 0 6px 6px -3px rgba(0,0,0,0.30);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--muted-foreground) 25%, transparent);
+  border-radius: 3px;
+}
+::selection { background: color-mix(in oklch, var(--primary) 30%, transparent); }
+
+/* ── Layout ── */
+.settings-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.settings-top-bar {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding-top: 8px;
+  padding-left: var(--traffic-light-safe);
+  padding-right: 16px;
+  -webkit-app-region: drag;
+  flex-shrink: 0;
+}
+.settings-top-bar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.settings-top-bar-back {
+  margin-right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  transition: background 150ms, color 150ms;
+}
+.settings-top-bar-back:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* ── Content ── */
+.settings-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px 48px;
+  max-width: 640px;
+}
+.settings-section {
+  margin-bottom: 32px;
+}
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+/* ── Settings Card ── */
+.settings-card {
+  background: var(--card);
+  border: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.settings-row-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.settings-row-label-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.settings-row-label-desc {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+/* ── Input ── */
+.settings-input {
+  flex-shrink: 0;
+  width: 240px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-3xl);
+  background: color-mix(in oklch, var(--input) 50%, transparent);
+  color: var(--foreground);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.settings-input:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 30%, transparent);
+}
+.settings-input::placeholder {
+  color: var(--muted-foreground);
+}
+.settings-input[type="password"] {
+  font-family: monospace;
+  letter-spacing: 0.1em;
+}
+
+/* ── Select ── */
+.settings-select {
+  flex-shrink: 0;
+  width: 240px;
+  height: 36px;
+  padding: 0 32px 0 12px;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-3xl);
+  background: color-mix(in oklch, var(--input) 50%, transparent);
+  color: var(--foreground);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.settings-select:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 30%, transparent);
+}
+
+/* ── Switch ── */
+.settings-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.settings-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.settings-switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: var(--input);
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms;
+}
+.settings-switch input:checked + .settings-switch-track {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.settings-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: transform 150ms;
+  pointer-events: none;
+}
+.settings-switch input:checked ~ .settings-switch-thumb {
+  transform: translateX(20px);
+}
+
+/* ── Segmented Control ── */
+.segmented-control {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--muted);
+  border-radius: 999px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.segmented-option {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+.segmented-option:hover {
+  color: var(--foreground);
+}
+.segmented-option.active {
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+/* ── Button ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms, opacity 150ms;
+}
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.btn-primary:hover { opacity: 0.85; }
+.btn-outline {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+}
+.btn-outline:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.btn-destructive {
+  background: var(--destructive);
+  color: white;
+}
+.btn-destructive:hover { opacity: 0.9; }
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* ── Status Badge ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.status-badge.success {
+  background: color-mix(in oklch, var(--status-success) 10%, transparent);
+  color: var(--status-success);
+  border: 1px solid color-mix(in oklch, var(--status-success) 20%, transparent);
+}
+.status-badge.error {
+  background: color-mix(in oklch, var(--status-error) 10%, transparent);
+  color: var(--status-error);
+  border: 1px solid color-mix(in oklch, var(--status-error) 20%, transparent);
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ── Separator ── */
+.separator {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ── Danger Zone ── */
+.danger-zone {
+  border-color: color-mix(in oklch, var(--destructive) 30%, transparent);
+}
+.danger-zone .settings-row-label-text {
+  color: var(--destructive);
+}
+</style>
+</head>
+<body>
+<div class="settings-shell">
+  <!-- Top Bar -->
+  <div class="settings-top-bar">
+    <button class="settings-top-bar-back" title="返回" onclick="window.close()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="settings-top-bar-title">设置</span>
+  </div>
+
+  <!-- Content -->
+  <div class="settings-content">
+    <!-- Model Configuration -->
+    <div class="settings-section">
+      <div class="settings-section-title">模型配置</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">模型</span>
+            <span class="settings-row-label-desc">选择要使用的 AI 模型</span>
+          </div>
+          <select class="settings-select" id="modelSelect">
+            <option value="kimi-code/kimi-for-coding" selected>kimi-code/kimi-for-coding</option>
+            <option value="kimi-code/kimi-for-coding-mini">kimi-code/kimi-for-coding-mini</option>
+            <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
+            <option value="gpt-4o">gpt-4o</option>
+          </select>
+        </div>
+        <div class="separator"></div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">API Key</span>
+            <span class="settings-row-label-desc">用于自定义模型的 API 密钥</span>
+          </div>
+          <input type="password" class="settings-input" placeholder="sk-..." id="apiKeyInput">
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">API Base URL</span>
+            <span class="settings-row-label-desc">自定义 API 端点（可选）</span>
+          </div>
+          <input type="text" class="settings-input" placeholder="https://api.example.com/v1" id="baseUrlInput">
+        </div>
+      </div>
+    </div>
+
+    <!-- CLI Configuration -->
+    <div class="settings-section">
+      <div class="settings-section-title">CLI 配置</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">kimi-code 路径</span>
+            <span class="settings-row-label-desc">CLI 二进制文件路径，留空自动检测</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" class="settings-input" placeholder="自动检测" id="cliPathInput" style="width:180px;">
+            <button class="btn btn-outline btn-sm" onclick="alert('选择文件...')">浏览</button>
+          </div>
+        </div>
+        <div class="separator"></div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">CLI 版本</span>
+            <span class="settings-row-label-desc">当前检测到的 kimi-code 版本</span>
+          </div>
+          <span class="status-badge success">
+            <span class="status-dot"></span>
+            v0.13.1
+          </span>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">工作区路径</span>
+            <span class="settings-row-label-desc">kimi-code 的默认工作目录</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" class="settings-input" placeholder="/Users/dev/project" id="workspaceInput" style="width:180px;">
+            <button class="btn btn-outline btn-sm" onclick="alert('选择文件夹...')">浏览</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Permission & Safety -->
+    <div class="settings-section">
+      <div class="settings-section-title">权限与安全</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">权限模式</span>
+            <span class="settings-row-label-desc">控制 kimi-code 对文件系统和终端的访问权限</span>
+          </div>
+          <div class="segmented-control">
+            <button class="segmented-option" data-mode="plan">只读</button>
+            <button class="segmented-option active" data-mode="auto">自动</button>
+            <button class="segmented-option" data-mode="yolo">完全访问</button>
+          </div>
+        </div>
+        <div class="separator"></div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">自动审批工具调用</span>
+            <span class="settings-row-label-desc">跳过所有工具调用的确认提示</span>
+          </div>
+          <label class="settings-switch">
+            <input type="checkbox" checked>
+            <span class="settings-switch-track"></span>
+            <span class="settings-switch-thumb"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <div class="settings-section">
+      <div class="settings-section-title">外观</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">主题</span>
+            <span class="settings-row-label-desc">选择界面配色方案</span>
+          </div>
+          <div class="segmented-control">
+            <button class="segmented-option" data-theme="light">浅色</button>
+            <button class="segmented-option" data-theme="dark">深色</button>
+            <button class="segmented-option active" data-theme="auto">跟随系统</button>
+          </div>
+        </div>
+        <div class="separator"></div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">字体大小</span>
+            <span class="settings-row-label-desc">聊天消息和代码块的字体大小</span>
+          </div>
+          <select class="settings-select" style="width:120px;">
+            <option value="12">12px</option>
+            <option value="13">13px</option>
+            <option value="14" selected>14px</option>
+            <option value="15">15px</option>
+            <option value="16">16px</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced -->
+    <div class="settings-section">
+      <div class="settings-section-title">高级</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">遥测</span>
+            <span class="settings-row-label-desc">发送匿名使用数据以改进产品</span>
+          </div>
+          <label class="settings-switch">
+            <input type="checkbox">
+            <span class="settings-switch-track"></span>
+            <span class="settings-switch-thumb"></span>
+          </label>
+        </div>
+        <div class="separator"></div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">自动更新</span>
+            <span class="settings-row-label-desc">有新版本时自动下载更新</span>
+          </div>
+          <label class="settings-switch">
+            <input type="checkbox" checked>
+            <span class="settings-switch-track"></span>
+            <span class="settings-switch-thumb"></span>
+          </label>
+        </div>
+        <div class="separator"></div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">日志级别</span>
+            <span class="settings-row-label-desc">控制日志输出的详细程度</span>
+          </div>
+          <select class="settings-select" style="width:120px;">
+            <option value="off">关闭</option>
+            <option value="error">错误</option>
+            <option value="warn">警告</option>
+            <option value="info" selected>信息</option>
+            <option value="debug">调试</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="settings-section">
+      <div class="settings-section-title">危险操作</div>
+      <div class="settings-card danger-zone">
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">清除所有会话</span>
+            <span class="settings-row-label-desc">删除所有聊天历史和会话数据，此操作不可撤销</span>
+          </div>
+          <button class="btn btn-destructive btn-sm">清除</button>
+        </div>
+        <div class="separator"></div>
+        <div class="settings-row">
+          <div class="settings-row-label">
+            <span class="settings-row-label-text">重置设置</span>
+            <span class="settings-row-label-desc">恢复所有设置到默认值</span>
+          </div>
+          <button class="btn btn-outline btn-sm">重置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Segmented Control ──
+document.querySelectorAll('.segmented-control').forEach(control => {
+  control.querySelectorAll('.segmented-option').forEach(option => {
+    option.addEventListener('click', () => {
+      control.querySelectorAll('.segmented-option').forEach(o => o.classList.remove('active'));
+      option.classList.add('active');
+    });
+  });
+});
+
+// ── Switch toggle ──
+document.querySelectorAll('.settings-switch input').forEach(input => {
+  input.addEventListener('change', () => {
+    // Visual feedback handled by CSS
+  });
+});
+</script>
+</body>
+</html>
